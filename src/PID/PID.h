@@ -2,21 +2,20 @@
 #define PID_h
 #define LIB_VERSION	    0.0.1
 
-#include "Sampler2.h" 
+#include "Sampler.h"
 
 typedef unsigned long ulong;
 
 typedef struct PIDState {
-    ulong      timeStamp;
-    float      adcInput;               
-    float      pidOutput;               
-    float      setpoint;                             
-    float      dispKp;              
-    float      dispKi;		     
-    float      dispKd;		     
-    float      kp;                  
-    float      ki;                  
-    float      kd;                  
+    float      adcInput;
+    float      pidOutput;
+    float      setpoint;
+    float      dispKp;
+    float      dispKi;
+    float      dispKd;
+    float      kp;
+    float      ki;
+    float      kd;
     float      ITerm;
     float      DTerm;
     float      lastInput;
@@ -24,36 +23,36 @@ typedef struct PIDState {
     float      outMax;
     bool       controllerDirection;
     bool       enable;
-};
+} PIDState;
 
 typedef struct PIDConfig {
   void (*callback)(PIDState *);
   int diagLedPin;
   int adcChannel;
   int adcSampleRateHz;
-};
+} PIDConfig;
 
 class PID
 {
 
   public:     PID(PIDConfig config);
-  
-  public:  
-    void      SetLoopConstants(int, int, int);                   
-    void      UpdateLoop(int);								  
+
+  public:
+    void      SetLoopConstants(int, int, int);
+    void      UpdateLoop(int);
     void      SetOutputLimits(int, int);
-    void      Enable(bool);							  					
+    void      Enable(bool);
     void      EnableDataUpload( bool );
-    int       GetKp();						 
+    int       GetKp();
     int       GetKi();
-    int       GetKd();	
-    bool      GetMode();	
+    int       GetKd();
+    bool      GetMode();
     int       GetDirection();
-              
+
   private:
     static void _adcCallbackWrapper(void *, int);
-    byte        _serializePidState(char *);	
-        
+    byte        _serializePidState(char *);
+
   private:
     PIDConfig  _config;              // PID configuration structure passed to constructor
     bool       _ledState;
