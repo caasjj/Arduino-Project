@@ -11,8 +11,7 @@
 #include "Sampler.h"
 #include "PID.h"
 
-void (* lCallback)(int);
-void (* lCallback2)(void *, int);
+void (* lCallback)(void *, int);
 void *lObj;
 
 
@@ -23,22 +22,28 @@ void *lObj;
  *********************************************************************************************/
 void Sampler_setup(char adcChannel, int rateInHz, void *Obj, void (*callback)(void* Obj, int))
 {
+	// disable interrupts
     cli();
 
-    lCallback2 = callback;
+    lCallback = callback;
     lObj = Obj;
 
+	// macro to set up sampler timer
     timer_setup(rateInHz);
 
     // set up ADC
     ADMUX  = B01000000 | (0xF & adcChannel);
     ADCSRB = B00000000;
 
+	// macro to enable TIMSK
     timer_start();
 
+	// re-enable iterrupts
     sei();
 }
 
+// TIMER_VECTOR initialized TIMERx_COMPA_vect, where x is the
+// selected timer (0, 1, or 2) in TIMER constant in Sampler.h
 ISR(TIMER_VECTOR)
 {
     ADCSRA = B11001111;
@@ -49,5 +54,5 @@ ISR(ADC_vect)
     unsigned char adcl = ADCL;
     unsigned char adch = ADCH;
     unsigned int adcVal = (adch << 8) | adcl;
-    lCallback2( lObj, adcVal );
+    lCallback( lObj, adcVal );
 }

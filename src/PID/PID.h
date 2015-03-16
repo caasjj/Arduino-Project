@@ -27,15 +27,16 @@ typedef struct PIDState {
 
 typedef struct PIDConfig {
   void (*callback)(PIDState *);
-  int diagLedPin;
-  int adcChannel;
+  byte adcChannel;
   int adcSampleRateHz;
+  byte loopUpdateRatio;
+  byte diagLedPin;
 } PIDConfig;
 
 class PID
 {
 
-  public:     PID(PIDConfig config);
+  public:     PID(PIDConfig);
 
   public:
     void      SetLoopConstants(int, int, int);
