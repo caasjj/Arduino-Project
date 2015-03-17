@@ -74,5 +74,7 @@
 }
 
 void Sampler_setup(char, int, void *, void(*)(void *, int));
+void Sampler_start(void);
+void Sampler_stop(void);
 
 #endif

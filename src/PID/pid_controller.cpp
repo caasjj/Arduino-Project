@@ -13,19 +13,58 @@ Command 	*_command;
 
 void onNewSample(PIDState *pidState) {
 
- _messager->sendMessage(STATUS_MSG, (byte *) &pidState->adcInput, (unsigned int) sizeof(*pidState) );
+ _messager->sendMessage(STATUS_MSG, (uint8_t *) &pidState->adcInput, (uint16_t) sizeof(*pidState) );
 
 }
 
-void onReceivedCommand(Command *command) {
+bool onReceivedCommand(Command *command) {
 
-	TestMsg testMsg;
+	bool status = true;
 
-	testMsg.code = (uint16_t) command->cmdType;
-	testMsg.value = (uint16_t) command->body[0];
+	switch(command->cmdType) {
 
-	_messager->sendMessage(TEST_MSG, (byte *) &testMsg, (unsigned int) sizeof(testMsg) );
+	case ENABLE_SAMPLER_CMD:_pid->EnableSampler();
+		break;
 
+	case DISABLE_SAMPLER_CMD: _pid->EnableSampler();
+		break;
+
+ 	case CONFIGURE_PWM_CMD:
+ 		status = _pid->ConfigurePwm(command->body);
+ 		break;
+
+ 	case SET_LOOP_K_CMD:
+ 		status = _pid->SetLoopConstants(command->body);
+ 		break;
+
+ 	case SET_OUTPUT_LIMITS_CMD:
+ 		status = _pid->SetOutputLimits(command->body);
+ 		break;
+
+ 	case SET_PWM_CMD:
+ 		status = _pid->SetPwm(command->body);
+ 		break;
+
+ 	case SET_SETPOINT_CMD:
+ 		status = _pid->SetSetpoint(command->body);
+ 		break;
+
+ 	case ENABLE_LOOP_CMD: _pid->EnableLoop();
+ 		break;
+
+ 	case DISABLE_LOOP_CMD: _pid->DisableLoop();
+ 		break;
+
+ 	case ENABLE_STATUS_MESSAGES_CMD: _pid->EnableStatusMessages();
+ 		break;
+
+ 	case DISABLE_STATUS_MESSAGES_CMD: _pid->DisableStatusMessages();
+ 		break;
+
+	default: break;
+	}
+
+   return status;
 }
 
 void setup() {

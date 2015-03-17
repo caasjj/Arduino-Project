@@ -15,14 +15,135 @@
 PID::PID(PIDConfig config)
 {
   _config = config;
-  _pidState.pidOutput = 0.0;
 
   pinMode(_config.diagLedPin, OUTPUT);
   digitalWrite(_config.diagLedPin, LOW);
 
-
   Sampler_setup(_config.adcChannel, _config.adcSampleRateHz, this, PID::_adcCallbackWrapper);
 
+  // Start off in disabled mode
+  _statusMsgEnabled 	= false;
+  _pidState.enabled 	= false;
+  _pidState.pidOutput  	= 0.0;
+
+
+  // TEMPORARU
+  //Sampler_start();
+}
+
+
+/*********************************************************************************************
+ *
+ * disable sampler
+ *
+ *********************************************************************************************/
+void PID::EnableSampler(void)
+{
+	Sampler_start();
+}
+
+
+/*********************************************************************************************
+ *
+ * disable sampler
+ *
+ *********************************************************************************************/
+void PID::DisableSampler(void)
+{
+
+	Sampler_stop();
+
+}
+
+/*********************************************************************************************
+ *
+ * ConfigurePwm
+ *
+ *********************************************************************************************/
+bool PID::ConfigurePwm(uint8_t *data)
+{
+  return (*data>0);
+}
+
+/*********************************************************************************************
+ *
+ * SetLoopConstants
+ *
+ *********************************************************************************************/
+bool PID::SetLoopConstants(uint8_t *data)
+{
+  return (*data>0);
+}
+
+
+/*********************************************************************************************
+ *
+ * SetOutputLimits
+ *
+ *********************************************************************************************/
+bool PID::SetOutputLimits(uint8_t *data)
+{
+  return (*data>0);
+}
+
+/*********************************************************************************************
+ *
+ * SetPwm
+ *
+ *********************************************************************************************/
+bool PID::SetPwm(uint8_t *data)
+{
+  return (*data>0);
+}
+
+/*********************************************************************************************
+ *
+ * SetSetPoint
+ *
+ *********************************************************************************************/
+bool PID::SetSetpoint(uint8_t *data)
+{
+  return (*data>0);
+}
+
+/*********************************************************************************************
+ *
+ * EnableLoop
+ *
+ *********************************************************************************************/
+void PID::EnableLoop( void )
+{
+	_pidState.enabled = true;
+}
+
+/*********************************************************************************************
+ *
+ * DisableLoop
+ *
+ *********************************************************************************************/
+void PID::DisableLoop( void )
+{
+	_pidState.enabled = false;
+}
+
+ /*********************************************************************************************
+ *
+ * EnableStatusMessages
+ *
+ *********************************************************************************************/
+void PID::EnableStatusMessages( void )
+{
+	_statusMsgEnabled = true;
+}
+
+/*********************************************************************************************
+ *
+ * DisableStatusMessages
+ *
+ *********************************************************************************************/
+void PID::DisableStatusMessages( void )
+{
+	_statusMsgEnabled = false;
 }
 
 /*********************************************************************************************
@@ -33,18 +154,8 @@ PID::PID(PIDConfig config)
  *
  *********************************************************************************************/
 void PID::_adcCallbackWrapper(void *pidPtr, int adcValue) {
-  PID* mySelf = (PID*) pidPtr;
-  mySelf->UpdateLoop(adcValue);
-}
-
-/*********************************************************************************************
- *
- * SetLoopConstants
- *
- *********************************************************************************************/
-void PID::SetLoopConstants(int Kp, int Ki, int Kd)
-{
-
+  //PID* mySelf = (PID*) pidPtr;
+  ((PID*) pidPtr)->_updateLoop(adcValue);
 }
 
 /*********************************************************************************************
@@ -52,7 +163,7 @@ void PID::SetLoopConstants(int Kp, int Ki, int Kd)
  * UpdateLoop
  *
  *********************************************************************************************/
-void PID::UpdateLoop(int adcValue)
+void PID::_updateLoop(int adcValue)
 {
   _ledState = !_ledState;
   digitalWrite(_config.diagLedPin, _ledState);
@@ -72,54 +183,13 @@ void PID::UpdateLoop(int adcValue)
   _pidState.outMin = -1000;
   _pidState.outMax = 1000;
   _pidState.controllerDirection = 1;
-  _pidState.enable = true;
+  _pidState.enabled = true;
+  _pidState.outputUpdated = false;
 
   // callback the PID instantiator and give it the data
     _config.callback(&_pidState);
 
 }
-
-/*********************************************************************************************
- *
- * SetOutputLimits
- *
- *********************************************************************************************/
-void PID::SetOutputLimits(int Min, int Max)
-{
-
-}
-
-/*********************************************************************************************
- *
- * Enable
- *
- *********************************************************************************************/
-void PID::Enable(bool enabled)
-{
-
-}
-
- /*********************************************************************************************
- *
- * EnableData
- *
- *********************************************************************************************/
-void PID::EnableDataUpload( bool enabled )
-{
-
-}
-
-/*********************************************************************************************
- *
- * Getters - DEBUG only!
- *
- *********************************************************************************************/
-int PID::GetKp(){ return  _pidState.dispKp; }
-int PID::GetKi(){ return  _pidState.dispKi;}
-int PID::GetKd(){ return  _pidState.dispKd;}
-
-bool PID::GetMode(){ return  _pidState.enable; }
-int PID::GetDirection(){ return _pidState.controllerDirection;}
 
 
 

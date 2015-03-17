@@ -3,32 +3,49 @@
 
 #include "arduino.h"
 
-#define STREAM_DELIMITER 0x3344
+#define FRAME_DELIMITER 0x3344
+#define FRAME_HEADER_BYTES	2*sizeof(uint16_t)+sizeof(uint32_t)+sizeof(msg_t)
 
 // MSG Types
-#define	STATUS_MSG				0
-#define ERROR_MSG				1
-#define TEST_MSG				2
+#define STATUS_BASE_OFFSET	0
+typedef enum msg_t {						\
+ STATUS_MSG,								\
+ ERROR_MSG,									\
+ TEST_MSG,									\
+ ACK_MSG									\
+} msg_t;									\
 
 // CMD Types
-#define LIMITS_CMD				10
-#define RUN_CMD					11
-#define SET_PWM_CMD				12
-#define SET_LOOP_K_CMD			13
-#define CONFIG_PWM_CMD			14
-#define ENABLE_LOOP_CMD			15
-#define ENABLE_STATUS_MSG_CMD	16
-#define MAX_CMD_INDEX			16
+#define CMD_BASE_OFFSET		10
+typedef enum {								\
+ ENABLE_SAMPLER_CMD = CMD_BASE_OFFSET,  	\
+ DISABLE_SAMPLER_CMD,  						\
+ CONFIGURE_PWM_CMD,							\
+ SET_LOOP_K_CMD,							\
+ SET_OUTPUT_LIMITS_CMD,						\
+ SET_PWM_CMD,								\
+ SET_SETPOINT_CMD,							\
+ ENABLE_LOOP_CMD,							\
+ DISABLE_LOOP_CMD,							\
+ ENABLE_STATUS_MESSAGES_CMD,				\
+ DISABLE_STATUS_MESSAGES_CMD,				\
+ INVALID_CMD								\
+} cmd_t;
 
-// Error codes
-#define CMD_TOO_LONG_ERROR		21
-#define CMD_INVALID_CMD_ERROR	22
-#define CMD_LOST_SYNC 			23
-#define CMD_BAD_HEAD			24
+// Command parsing Error codes
+#define CMD_ERR_BASE_OFFSET 20
+
+typedef enum {								\
+ TOO_LONG_CMD_ERR = CMD_ERR_BASE_OFFSET,	\
+ INVALID_CMD_ERR,							\
+ LOST_SYNC_CMD_ERR,							\
+ BAD_HEAD_CMD_ERR,							\
+ UNKNOWN_CMD_ERR 							\
+} cmd_err_t;
 
 // Length of the longest avaiable command, including
 // everything except sync head/foot
-// setLooConstantsCmd:
+// setLoopConstantsCmd:
 //  cmdLenght        = 2
 //  cmd              = 1
 //  timeStamp        = 4
@@ -38,89 +55,54 @@
 #define MAX_CMD_LENGTH			37
 
 // synch states
-#define	SYNC_UNSYNC			 	0
-#define SYNC_FIND_HEAD		 	1
-#define SYNC_FIND_LENGTH	 	2
-#define SYNC_FIND_CMDTYPE	 	3
-#define SYNC_FIND_CMD	     	4
-#define SYNC_FIND_TAIL	     	5
-#define SYNC_WAIT_NEW_MSG    	6
+#define SYNC_STATE_BASE_OFFSET 	5
+
+typedef enum {								\
+ SYNC_UNSYNC = SYNC_STATE_BASE_OFFSET,		\
+ SYNC_FIND_HEAD,							\
+ SYNC_FIND_LENGTH,							\
+ SYNC_FIND_CMD,								\
+ SYNC_FIND_TAIL,							\
+} sync_state_t;
 
 typedef struct {
-	uint8_t			errorCode;
+	cmd_err_t	errorCode;
 } ErrorMsg;
 
 typedef struct {
-    uint16_t 	code;
-	uint16_t 	value;
+	sync_state_t 	state;
+    uint16_t 		code;
+	uint16_t 		value;
 } TestMsg;
+
+typedef struct {
+	bool	status;
+	cmd_t	cmdType;
+} AckMsg;
 
 
 typedef struct {
 	uint8_t 	cmdLength;
-	uint8_t 	cmdType;
+	cmd_t 		cmdType;
 	uint32_t	timeStamp;
 	uint8_t 	body[64];
 } Command;
 
 
 typedef struct MSGConfig {
-  void (*callback)(Command *);
+  bool (*callback)(Command *);
   uint32_t baudRate;
 } MSGConfig;
 
 
 typedef struct {
-	uint16_t	head;
+	uint16_t	headDelimiter;
 	uint16_t	length;
-	uint8_t		msgType;
+	msg_t		msgType;
 	uint32_t	timeStamp;
 	uint8_t * 	body;
-	uint16_t	tail;
+	uint16_t	tailDelimiter;
 } Frame;
-
-
-
-// Command Structures
-
-// 10
-typedef struct {
-	float		maxOutput;
-	float		minOutput;
-} ConfigLimitsCmd;
-
-// 11
-typedef struct {
-
-} SetSetpointCmd;
-
-// 12
-typedef struct {
-	float		value;
-	bool		loopEnable;
-} SetPwmCmd;
-
-// 13
-typedef struct {
-	float		value;
-	bool		loopEnable;
-} SetLoopConstantsCmd;
-
-// 14
-typedef struct {
-
-} ConfigPwmCmd;
-
-// 15
-typedef struct {
-
-} EnableLoopCmd;
-
-// 16
-typedef struct {
-	bool	enabled;
-} EnableStatusMsgCmd;
-
 
 class Messager
 {
@@ -128,8 +110,8 @@ class Messager
 	public: Messager(MSGConfig);
 
 	public:
-		void sendMessage(uint8_t, uint8_t *, uint16_t ) ;
-		void parseCommand();
+		void 		sendMessage(msg_t, uint8_t *, uint16_t ) ;
+		void 		parseCommand();
 
 	private:
 		Frame 		_frame;
