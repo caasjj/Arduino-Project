@@ -19,7 +19,9 @@ Messager::Messager(MSGConfig config) {
 void Messager::sendMessage(msg_t msgType, uint8_t *buffer, uint16_t length) {
 
 	  // prepare frame for new message
-	  _frame.length    = length + 8;
+
+	  // length is the message length + msgType (msg_t enum) + msgLength (uint16) + timeStamp (uint32)
+	  _frame.length    = length + sizeof(msg_t) + sizeof(uint16_t) + sizeof(uint32_t);
 	  _frame.msgType   = msgType;
 	  _frame.timeStamp = millis();
 	  _frame.body      = buffer;
@@ -57,7 +59,9 @@ void Messager::parseCommand() {
 
 	ack.status = _config.callback( &__command );
 	ack.cmdType = __command.cmdType;
-	sendMessage(ACK_MSG, (byte *)& ack, (uint16_t)sizeof(ack));
+
+	if (ack.status != 0)
+		sendMessage(ACK_MSG, (byte *)& ack, (uint16_t)sizeof(ack));
 
 }
 

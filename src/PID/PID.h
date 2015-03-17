@@ -16,7 +16,7 @@ typedef struct {
 	float		aggressiveCutoffPoint;
 	uint8_t 	loopUpdateRatio;
 	uint8_t 	loopPolarity;
-} loopConstants;
+} PIDLoopK;
 
 typedef struct PIDState {
     float      adcInput;
@@ -36,6 +36,7 @@ typedef struct PIDState {
     bool       controllerDirection;
     bool       enabled;
     bool	   outputUpdated;
+    bool	   aggressiveMode;
 } PIDState;
 
 typedef struct PIDConfig {
@@ -55,27 +56,29 @@ class PID
 
   public:
 
-  	void	  EnableSampler( void );
-  	void	  DisableSampler( void );
-    bool	  ConfigurePwm(uint8_t *);
-    bool      SetLoopConstants( uint8_t * );
-    bool      SetOutputLimits( uint8_t * );
-    bool	  SetPwm( uint8_t * );
-    bool	  SetSetpoint( uint8_t * );
-    void      EnableLoop( void );
-    void      DisableLoop( void );
-    void      EnableStatusMessages( void );
-    void      DisableStatusMessages( void );
+  	int8_t	  	EnableSampler( void );
+  	int8_t	  	DisableSampler( void );
+    int8_t	  	ConfigurePwm(uint8_t *);
+    int8_t    	SetLoopConstants( uint8_t * );
+    int8_t    	GetLoopConstants( void );
+    int8_t    	SetOutputLimits( uint8_t * );
+    int8_t	  	SetPwm( uint8_t * );
+    int8_t	  	SetSetpoint( uint8_t * );
+    int8_t      EnableLoop( void );
+    int8_t      DisableLoop( void );
+    int8_t      EnableStatusMessages( void );
+    int8_t      DisableStatusMessages( void );
 
   private:
     static void _adcCallbackWrapper( void *, int );
     void        _updateLoop( int );
 
   private:
-    PIDConfig  _config;     		// PID configuration structure passed to constructor
-    PIDState   _pidState;   		// private data structure maintaining current state of PID
-    bool       _ledState;			// private variable to toggle diagnostics LED on and off
-    bool	   _statusMsgEnabled;
+    PIDConfig  	 _config;     		// PID configuration structure passed to constructor
+    PIDState   	 _pidState;   		// PID private data structure maintaining current state of PID
+    PIDLoopK 	 _pidLoopK;			// PID loop constants, copied into PIDState
+    bool       	 _ledState;			// private variable to toggle diagnostics LED on and off
+    bool	     _statusMsgEnabled;
 };
 #endif
 

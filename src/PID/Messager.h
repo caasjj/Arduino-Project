@@ -22,6 +22,7 @@ typedef enum {								\
  DISABLE_SAMPLER_CMD,  						\
  CONFIGURE_PWM_CMD,							\
  SET_LOOP_K_CMD,							\
+ GET_LOOP_K_CMD,							\
  SET_OUTPUT_LIMITS_CMD,						\
  SET_PWM_CMD,								\
  SET_SETPOINT_CMD,							\
@@ -76,7 +77,7 @@ typedef struct {
 } TestMsg;
 
 typedef struct {
-	bool	status;
+	int8_t	status;
 	cmd_t	cmdType;
 } AckMsg;
 
@@ -90,7 +91,7 @@ typedef struct {
 
 
 typedef struct MSGConfig {
-  bool (*callback)(Command *);
+  int8_t (*callback)(Command *);
   uint32_t baudRate;
 } MSGConfig;
 

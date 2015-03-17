@@ -17,16 +17,18 @@ void onNewSample(PIDState *pidState) {
 
 }
 
-bool onReceivedCommand(Command *command) {
+int8_t onReceivedCommand(Command *command) {
 
-	bool status = true;
+	int8_t status = 0;
 
 	switch(command->cmdType) {
 
-	case ENABLE_SAMPLER_CMD:_pid->EnableSampler();
+	case ENABLE_SAMPLER_CMD:
+		status = _pid->EnableSampler();
 		break;
 
-	case DISABLE_SAMPLER_CMD: _pid->EnableSampler();
+	case DISABLE_SAMPLER_CMD:
+		status = _pid->EnableSampler();
 		break;
 
  	case CONFIGURE_PWM_CMD:
@@ -35,6 +37,10 @@ bool onReceivedCommand(Command *command) {
 
  	case SET_LOOP_K_CMD:
  		status = _pid->SetLoopConstants(command->body);
+ 		break;
+
+ 	case GET_LOOP_K_CMD:
+ 		status = _pid->GetLoopConstants();
  		break;
 
  	case SET_OUTPUT_LIMITS_CMD:
@@ -49,16 +55,20 @@ bool onReceivedCommand(Command *command) {
  		status = _pid->SetSetpoint(command->body);
  		break;
 
- 	case ENABLE_LOOP_CMD: _pid->EnableLoop();
+ 	case ENABLE_LOOP_CMD:
+ 		status = _pid->EnableLoop();
  		break;
 
- 	case DISABLE_LOOP_CMD: _pid->DisableLoop();
+ 	case DISABLE_LOOP_CMD:
+ 		status = _pid->DisableLoop();
  		break;
 
- 	case ENABLE_STATUS_MESSAGES_CMD: _pid->EnableStatusMessages();
+ 	case ENABLE_STATUS_MESSAGES_CMD:
+ 		status = _pid->EnableStatusMessages();
  		break;
 
- 	case DISABLE_STATUS_MESSAGES_CMD: _pid->DisableStatusMessages();
+ 	case DISABLE_STATUS_MESSAGES_CMD:
+ 		status = _pid->DisableStatusMessages();
  		break;
 
 	default: break;

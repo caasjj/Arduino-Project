@@ -37,9 +37,10 @@ PID::PID(PIDConfig config)
  * disable sampler
  *
  *********************************************************************************************/
-void PID::EnableSampler(void)
+int8_t PID::EnableSampler(void)
 {
 	Sampler_start();
+	return 0;
 }
 
 
@@ -48,10 +49,11 @@ void PID::EnableSampler(void)
  * disable sampler
  *
  *********************************************************************************************/
-void PID::DisableSampler(void)
+int8_t PID::DisableSampler(void)
 {
 
 	Sampler_stop();
+	return 0;
 
 }
 
@@ -60,9 +62,9 @@ void PID::DisableSampler(void)
  * ConfigurePwm
  *
  *********************************************************************************************/
-bool PID::ConfigurePwm(uint8_t *data)
+int8_t PID::ConfigurePwm(uint8_t *data)
 {
-  return (*data>0);
+  return 0;
 }
 
 /*********************************************************************************************
@@ -70,20 +72,29 @@ bool PID::ConfigurePwm(uint8_t *data)
  * SetLoopConstants
  *
  *********************************************************************************************/
-bool PID::SetLoopConstants(uint8_t *data)
+int8_t PID::SetLoopConstants(uint8_t *data)
 {
-  return (*data>0);
+  return 0;
 }
 
+/*********************************************************************************************
+ *
+ * GetLoopConstants
+ *
+ *********************************************************************************************/
+int8_t PID::GetLoopConstants( void )
+{
+  return 0;
+}
 
 /*********************************************************************************************
  *
  * SetOutputLimits
  *
  *********************************************************************************************/
-bool PID::SetOutputLimits(uint8_t *data)
+int8_t PID::SetOutputLimits(uint8_t *data)
 {
-  return (*data>0);
+  return 0;
 }
 
 /*********************************************************************************************
@@ -91,9 +102,9 @@ bool PID::SetOutputLimits(uint8_t *data)
  * SetPwm
  *
  *********************************************************************************************/
-bool PID::SetPwm(uint8_t *data)
+int8_t PID::SetPwm(uint8_t *data)
 {
-  return (*data>0);
+  return 0;
 }
 
 /*********************************************************************************************
@@ -101,9 +112,9 @@ bool PID::SetPwm(uint8_t *data)
  * SetSetPoint
  *
  *********************************************************************************************/
-bool PID::SetSetpoint(uint8_t *data)
+int8_t PID::SetSetpoint(uint8_t *data)
 {
-  return (*data>0);
+  return 0;
 }
 
 /*********************************************************************************************
@@ -111,9 +122,10 @@ bool PID::SetSetpoint(uint8_t *data)
  * EnableLoop
  *
  *********************************************************************************************/
-void PID::EnableLoop( void )
+int8_t PID::EnableLoop( void )
 {
 	_pidState.enabled = true;
+	return 1;
 }
 
 /*********************************************************************************************
@@ -121,9 +133,10 @@ void PID::EnableLoop( void )
  * DisableLoop
  *
  *********************************************************************************************/
-void PID::DisableLoop( void )
+int8_t PID::DisableLoop( void )
 {
 	_pidState.enabled = false;
+	return 0;
 }
 
  /*********************************************************************************************
@@ -131,9 +144,10 @@ void PID::DisableLoop( void )
  * EnableStatusMessages
  *
  *********************************************************************************************/
-void PID::EnableStatusMessages( void )
+int8_t PID::EnableStatusMessages( void )
 {
 	_statusMsgEnabled = true;
+	return 0;
 }
 
 /*********************************************************************************************
@@ -141,9 +155,10 @@ void PID::EnableStatusMessages( void )
  * DisableStatusMessages
  *
  *********************************************************************************************/
-void PID::DisableStatusMessages( void )
+int8_t PID::DisableStatusMessages( void )
 {
 	_statusMsgEnabled = false;
+	return 0;
 }
 
 /*********************************************************************************************
@@ -154,7 +169,6 @@ void PID::DisableStatusMessages( void )
  *
  *********************************************************************************************/
 void PID::_adcCallbackWrapper(void *pidPtr, int adcValue) {
-  //PID* mySelf = (PID*) pidPtr;
   ((PID*) pidPtr)->_updateLoop(adcValue);
 }
 
@@ -183,8 +197,7 @@ void PID::_updateLoop(int adcValue)
   _pidState.outMin = -1000;
   _pidState.outMax = 1000;
   _pidState.controllerDirection = 1;
-  _pidState.enabled = true;
-  _pidState.outputUpdated = false;
+   _pidState.outputUpdated = false;
 
   // callback the PID instantiator and give it the data
     _config.callback(&_pidState);
