@@ -94,7 +94,7 @@ void setup() {
   PIDConfig pidConfig;
   pidConfig.adcChannel       		= ADC_CHANNEL;
   pidConfig.adcSampleRateHz  		= ADC_SAMPLE_RATE_HZ;
-  pidConfig.adcAverageLog2		 	= ADC_AVERAGE_LOG2;
+  pidConfig.adcDecimateLog2		 	= ADC_DECIMATE_LOG2;
   pidConfig.loopUpdateRatio  		= PID_LOOP_UPDATE_RATIO;
   pidConfig.diagLedPin       		= PID_DIAG_LED_PIN;
   pidConfig.callback         		= &onNewSample;

@@ -9,7 +9,7 @@
 
 #define ADC_CHANNEL          1
 #define ADC_SAMPLE_RATE_HZ   16
-#define ADC_AVERAGE_LOG2 	 4
+#define ADC_DECIMATE_LOG2 	 4
 #define SERIAL_BAUD_RATE     500000
 #define DAC_CHANNEL          0
 #define USE_SW_PWM           1

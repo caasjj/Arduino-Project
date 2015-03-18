@@ -43,7 +43,7 @@ typedef struct PIDConfig {
   void 			(*callback)(PIDState *);
   byte 			adcChannel;
   int 			adcSampleRateHz;
-  uint8_t 		adcAverageLog2;
+  uint8_t 		adcDecimateLog2;
   byte 			loopUpdateRatio;
   byte 			diagLedPin;
 } PIDConfig;

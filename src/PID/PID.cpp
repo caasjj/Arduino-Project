@@ -19,7 +19,7 @@ PID::PID(PIDConfig config)
   pinMode(_config.diagLedPin, OUTPUT);
   digitalWrite(_config.diagLedPin, LOW);
 
-  Sampler_setup(_config.adcChannel, _config.adcSampleRateHz, _config.adcAverageLog2, this, PID::_adcCallbackWrapper);
+  Sampler_setup(_config.adcChannel, _config.adcSampleRateHz, _config.adcDecimateLog2, this, PID::_adcCallbackWrapper);
 
   // Start off in disabled mode
   _statusMsgEnabled 	= false;

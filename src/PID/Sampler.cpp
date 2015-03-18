@@ -7,29 +7,34 @@
  *
  * This Library is licensed under a GPLv3 License
  **********************************************************************************************/
-
 #include "Sampler.h"
-#include "PID.h"
 
-void (* lCallback)(void *, int);
+void (* __Callback)(void *, int);
 void *lObj;
 
-uint16_t 	lAccumulator;
-uint8_t 	lCounter = 0;
-uint8_t 	lAvg = 0;
+// ADC local variables
+uint16_t 	__AdcAccumulator;
+uint8_t 	__AdcCounter = 0;
+uint8_t 	__AdcDecimateLog2 = 0;
+
+// PWM local variables
+uint8_t		__PwmValue;
+uint8_t		__PwmPin;
+uint8_t		__PwmNumbits;
+uint8_t		__PwmDecimateLog2;
 /*********************************************************************************************
  *
  * Sampler Constructure
  *
  *********************************************************************************************/
-void Sampler_setup(char adcChannel, int rateInHz, uint8_t avg, void *Obj, void (*callback)(void* Obj, int))
+void Sampler_setup(char adcChannel, int rateInHz, uint8_t decimateLog2, void *Obj, void (*callback)(void* Obj, int))
 {
 	// disable interrupts
     cli();
 
-    lCallback = callback;
+    __Callback = callback;
     lObj = Obj;
-    lAvg = avg;
+    __AdcDecimateLog2 = decimateLog2;
 
 	// macro to set up sampler timer
     timer_setup(rateInHz);
@@ -50,6 +55,7 @@ void Sampler_start() {
 	cli();
 	timer_start();
 	sei();
+
 }
 
 void Sampler_stop() {
@@ -71,11 +77,29 @@ ISR(ADC_vect)
     unsigned char adch = ADCH;
     unsigned int adcVal = (adch << 8) | adcl;
 
-    if (lCounter++ == ( 1 << lAvg) ) {
-    	lCallback( lObj, lAccumulator >> lAvg );
-    	lCounter 	 = 0;
-    	lAccumulator = 0;
+	// Decimate, average and update ADC value to caller
+    if (__AdcCounter++ == ( 1 << __AdcDecimateLog2) ) {
+    	__Callback( lObj, __AdcAccumulator >> __AdcDecimateLog2 );
+    	__AdcCounter 	 = 0;
+    	__AdcAccumulator = 0;
     } else {
-    	lAccumulator += adcVal;
+    	__AdcAccumulator += adcVal;
     }
+
+	// Update PWM state based on __PwmValue
+}
+
+void Pwm_Setup(uint8_t pin, uint8_t decimateLog2, uint8_t numbits) {
+
+	__PwmPin = pin;
+    __PwmNumbits =  numbits;
+    __PwmDecimateLog2 = decimateLog2;
+
+	pinMode( __PwmPin, OUTPUT );
+	digitalWrite( __PwmPin, LOW);
+}
+
+void Pwm_update(uint8_t value) {
+
+	__PwmValue = value;
 }
