@@ -19,7 +19,12 @@ void onNewSample(PIDState *pidState) {
 
 int8_t onReceivedCommand(Command *command) {
 
-	int8_t status = 0;
+	int8_t 		status = 0;
+	PIDLoopK	*pidLoopK_ptr;
+	TestMsg		testMsg;
+
+	uint8_t * ptr1;
+	uint8_t * ptr2;
 
 	switch(command->cmdType) {
 
@@ -36,11 +41,16 @@ int8_t onReceivedCommand(Command *command) {
  		break;
 
  	case SET_LOOP_K_CMD:
- 		status = _pid->SetLoopConstants(command->body);
+ 		_pid->SetLoopConstants(command->body);
+ 		pidLoopK_ptr = _pid->GetLoopConstants();
+		_messager->sendMessage(LOOP_K_MSG, (uint8_t *)pidLoopK_ptr, sizeof(PIDLoopK));
+		status = 0;
  		break;
 
  	case GET_LOOP_K_CMD:
- 		status = _pid->GetLoopConstants();
+ 		pidLoopK_ptr = _pid->GetLoopConstants();
+		_messager->sendMessage(LOOP_K_MSG, (uint8_t *)pidLoopK_ptr, sizeof(PIDLoopK));
+		status = 0;
  		break;
 
  	case SET_OUTPUT_LIMITS_CMD:

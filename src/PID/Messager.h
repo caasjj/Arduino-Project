@@ -6,13 +6,18 @@
 #define FRAME_DELIMITER 0x3344
 #define FRAME_HEADER_BYTES	2*sizeof(uint16_t)+sizeof(uint32_t)+sizeof(msg_t)
 
+#define ACK_OK			 1
+#define ACK_NO_RESPONSE  0
+#define ACK_NOT_OK 	    -1
+
 // MSG Types
 #define STATUS_BASE_OFFSET	0
 typedef enum msg_t {						\
  STATUS_MSG,								\
  ERROR_MSG,									\
  TEST_MSG,									\
- ACK_MSG									\
+ ACK_MSG,									\
+ LOOP_K_MSG									\
 } msg_t;									\
 
 // CMD Types
@@ -47,13 +52,13 @@ typedef enum {								\
 // Length of the longest avaiable command, including
 // everything except sync head/foot
 // setLoopConstantsCmd:
-//  cmdLenght        = 2
-//  cmd              = 1
+//  cmdLength        = 2
+//  cmd              = 2
 //  timeStamp        = 4
 //  7 floats = 7 x 4 = 28
 //  1 int    = 1 x 2 = 2
-//   TOTAL           = 37
-#define MAX_CMD_LENGTH			37
+//   TOTAL           = 38
+#define MAX_CMD_LENGTH			38
 
 // synch states
 #define SYNC_STATE_BASE_OFFSET 	5
@@ -72,8 +77,11 @@ typedef struct {
 
 typedef struct {
 	sync_state_t 	state;
-    uint16_t 		code;
-	uint16_t 		value;
+    uint8_t 		value_uint8_t;
+	uint16_t 		value_uint16_t;
+	uint32_t		value_uint32_t;
+	float			value_float;
+	bool			value_bool;
 } TestMsg;
 
 typedef struct {

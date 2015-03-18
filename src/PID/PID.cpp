@@ -25,7 +25,7 @@ PID::PID(PIDConfig config)
   _statusMsgEnabled 	= false;
   _pidState.enabled 	= false;
   _pidState.pidOutput  	= 0.0;
-
+  _pidState.setpoint    = 0.0;
 
   // TEMPORARU
   //Sampler_start();
@@ -74,7 +74,13 @@ int8_t PID::ConfigurePwm(uint8_t *data)
  *********************************************************************************************/
 int8_t PID::SetLoopConstants(uint8_t *data)
 {
-  return 0;
+  uint8_t *ptr = (uint8_t *) &_pidLoopK;
+
+  for(unsigned int i=0; i < sizeof(PIDLoopK); i++) {
+  	*ptr++ = *data++;
+  }
+
+  return 1;
 }
 
 /*********************************************************************************************
@@ -82,9 +88,9 @@ int8_t PID::SetLoopConstants(uint8_t *data)
  * GetLoopConstants
  *
  *********************************************************************************************/
-int8_t PID::GetLoopConstants( void )
+PIDLoopK* PID::GetLoopConstants( void )
 {
-  return 0;
+  return &_pidLoopK;
 }
 
 /*********************************************************************************************
@@ -114,7 +120,10 @@ int8_t PID::SetPwm(uint8_t *data)
  *********************************************************************************************/
 int8_t PID::SetSetpoint(uint8_t *data)
 {
-  return 0;
+	_pidState.setpoint = * (float *) data;
+	_pidState.enabled  = * (bool *) (&data[4]);
+
+  return 1;
 }
 
 /*********************************************************************************************
@@ -184,7 +193,6 @@ void PID::_updateLoop(int adcValue)
 
   _pidState.adcInput = adcValue;
   _pidState.pidOutput = _pidState.pidOutput + 1.0;
-  _pidState.setpoint = 9.0;
   _pidState.dispKp = 0.12;
   _pidState.dispKi = 0.98;
   _pidState.dispKd = -1.24;
@@ -197,7 +205,7 @@ void PID::_updateLoop(int adcValue)
   _pidState.outMin = -1000;
   _pidState.outMax = 1000;
   _pidState.controllerDirection = 1;
-   _pidState.outputUpdated = false;
+  _pidState.outputUpdated = false;
 
   // callback the PID instantiator and give it the data
     _config.callback(&_pidState);

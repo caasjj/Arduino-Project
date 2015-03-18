@@ -15,7 +15,7 @@ typedef struct {
 	float		kdAggressive;
 	float		aggressiveCutoffPoint;
 	uint8_t 	loopUpdateRatio;
-	uint8_t 	loopPolarity;
+	int8_t 		loopPolarity;
 } PIDLoopK;
 
 typedef struct PIDState {
@@ -48,7 +48,6 @@ typedef struct PIDConfig {
 } PIDConfig;
 
 
-
 class PID
 {
 
@@ -60,7 +59,7 @@ class PID
   	int8_t	  	DisableSampler( void );
     int8_t	  	ConfigurePwm(uint8_t *);
     int8_t    	SetLoopConstants( uint8_t * );
-    int8_t    	GetLoopConstants( void );
+    PIDLoopK*   GetLoopConstants( void );
     int8_t    	SetOutputLimits( uint8_t * );
     int8_t	  	SetPwm( uint8_t * );
     int8_t	  	SetSetpoint( uint8_t * );
