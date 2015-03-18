@@ -40,11 +40,12 @@ typedef struct PIDState {
 } PIDState;
 
 typedef struct PIDConfig {
-  void (*callback)(PIDState *);
-  byte adcChannel;
-  int adcSampleRateHz;
-  byte loopUpdateRatio;
-  byte diagLedPin;
+  void 			(*callback)(PIDState *);
+  byte 			adcChannel;
+  int 			adcSampleRateHz;
+  uint8_t 		samplesToAverage;
+  byte 			loopUpdateRatio;
+  byte 			diagLedPin;
 } PIDConfig;
 
 
@@ -76,7 +77,7 @@ class PID
     PIDConfig  	 _config;     		// PID configuration structure passed to constructor
     PIDState   	 _pidState;   		// PID private data structure maintaining current state of PID
     PIDLoopK 	 _pidLoopK;			// PID loop constants, copied into PIDState
-    bool       	 _ledState;			// private variable to toggle diagnostics LED on and off
+    uint8_t    	 _ledState;			// private variable to toggle diagnostics LED on and off
     bool	     _statusMsgEnabled;
 };
 #endif

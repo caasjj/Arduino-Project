@@ -19,7 +19,7 @@ PID::PID(PIDConfig config)
   pinMode(_config.diagLedPin, OUTPUT);
   digitalWrite(_config.diagLedPin, LOW);
 
-  Sampler_setup(_config.adcChannel, _config.adcSampleRateHz, this, PID::_adcCallbackWrapper);
+  Sampler_setup(_config.adcChannel, _config.adcSampleRateHz, _config.samplesToAverage, this, PID::_adcCallbackWrapper);
 
   // Start off in disabled mode
   _statusMsgEnabled 	= false;
@@ -188,7 +188,8 @@ void PID::_adcCallbackWrapper(void *pidPtr, int adcValue) {
  *********************************************************************************************/
 void PID::_updateLoop(int adcValue)
 {
-  _ledState = !_ledState;
+  _ledState = (_ledState==HIGH) ? LOW : HIGH;
+
   digitalWrite(_config.diagLedPin, _ledState);
 
   _pidState.adcInput = adcValue;

@@ -14,19 +14,22 @@
 void (* lCallback)(void *, int);
 void *lObj;
 
-
+uint16_t 	lAccumulator;
+uint8_t 	lCounter = 0;
+uint8_t 	lAvg = 0;
 /*********************************************************************************************
  *
  * Sampler Constructure
  *
  *********************************************************************************************/
-void Sampler_setup(char adcChannel, int rateInHz, void *Obj, void (*callback)(void* Obj, int))
+void Sampler_setup(char adcChannel, int rateInHz, uint8_t avg, void *Obj, void (*callback)(void* Obj, int))
 {
 	// disable interrupts
     cli();
 
     lCallback = callback;
     lObj = Obj;
+    lAvg = avg;
 
 	// macro to set up sampler timer
     timer_setup(rateInHz);
@@ -67,5 +70,12 @@ ISR(ADC_vect)
     unsigned char adcl = ADCL;
     unsigned char adch = ADCH;
     unsigned int adcVal = (adch << 8) | adcl;
-    lCallback( lObj, adcVal );
+
+    if (lCounter++ == ( 1 << lAvg) ) {
+    	lCallback( lObj, lAccumulator >> lAvg );
+    	lCounter 	 = 0;
+    	lAccumulator = 0;
+    } else {
+    	lAccumulator += adcVal;
+    }
 }
