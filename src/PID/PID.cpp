@@ -19,7 +19,7 @@ PID::PID(PIDConfig config)
   pinMode(_config.diagLedPin, OUTPUT);
   digitalWrite(_config.diagLedPin, LOW);
 
-  Sampler_setup(_config.adcChannel, _config.adcSampleRateHz, _config.samplesToAverage, this, PID::_adcCallbackWrapper);
+  Sampler_setup(_config.adcChannel, _config.adcSampleRateHz, _config.adcAverageLog2, this, PID::_adcCallbackWrapper);
 
   // Start off in disabled mode
   _statusMsgEnabled 	= false;
@@ -120,7 +120,7 @@ int8_t PID::SetPwm(uint8_t *data)
  *********************************************************************************************/
 int8_t PID::SetSetpoint(uint8_t *data)
 {
-	_pidState.setpoint = * (float *) data;
+	_pidState.setpoint = * (int16_t *) data;
 	_pidState.enabled  = * (bool *) (&data[4]);
 
   return 1;
@@ -193,20 +193,21 @@ void PID::_updateLoop(int adcValue)
   digitalWrite(_config.diagLedPin, _ledState);
 
   _pidState.adcInput = adcValue;
-  _pidState.pidOutput = _pidState.pidOutput + 1.0;
-  _pidState.dispKp = 0.12;
-  _pidState.dispKi = 0.98;
-  _pidState.dispKd = -1.24;
-  _pidState.kp = 12;
-  _pidState.ki = 15;
-  _pidState.kd = -123;
-  _pidState.ITerm = 8997.8;
-  _pidState.DTerm = -232.11;
+  _pidState.pidOutput = _pidState.pidOutput + 1;
+  _pidState.dispKp = _pidLoopK.kp * 2;
+  _pidState.dispKi = _pidLoopK.ki * 2;
+  _pidState.dispKd = _pidLoopK.kd * 2;
+  _pidState.kp = _pidLoopK.kp;
+  _pidState.ki = _pidLoopK.ki;
+  _pidState.kd = _pidLoopK.kd;
+  _pidState.ITerm = 8000;
+  _pidState.DTerm = -9000;
   _pidState.lastInput = 121;
   _pidState.outMin = -1000;
   _pidState.outMax = 1000;
-  _pidState.controllerDirection = 1;
+  _pidState.controllerDirection = _pidLoopK.loopPolarity;
   _pidState.outputUpdated = false;
+  _pidState.aggressiveMode = false;
 
   // callback the PID instantiator and give it the data
     _config.callback(&_pidState);

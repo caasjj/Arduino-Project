@@ -7,33 +7,33 @@
 typedef unsigned long ulong;
 
 typedef struct {
-	float		kp;
-	float		ki;
-	float		kd;
-	float		kpAggressive;
-	float		kiAggressive;
-	float		kdAggressive;
-	float		aggressiveCutoffPoint;
+	int16_t		kp;
+	int16_t		ki;
+	int16_t		kd;
+	int16_t		kpAggressive;
+	int16_t		kiAggressive;
+	int16_t		kdAggressive;
+	int16_t		aggressiveCutoffPoint;
 	uint8_t 	loopUpdateRatio;
 	int8_t 		loopPolarity;
 } PIDLoopK;
 
 typedef struct PIDState {
-    float      adcInput;
-    float      pidOutput;
-    float      setpoint;
-    float      dispKp;
-    float      dispKi;
-    float      dispKd;
-    float      kp;
-    float      ki;
-    float      kd;
-    float      ITerm;
-    float      DTerm;
-    float      lastInput;
-    float      outMin;
-    float      outMax;
-    bool       controllerDirection;
+    int16_t      adcInput;
+    int16_t      pidOutput;
+    int16_t      setpoint;
+    int16_t      dispKp;
+    int16_t      dispKi;
+    int16_t      dispKd;
+    int16_t      kp;
+    int16_t      ki;
+    int16_t      kd;
+    int16_t      ITerm;
+    int16_t      DTerm;
+    int16_t      lastInput;
+    int16_t      outMin;
+    int16_t      outMax;
+    int8_t       controllerDirection;
     bool       enabled;
     bool	   outputUpdated;
     bool	   aggressiveMode;
@@ -43,7 +43,7 @@ typedef struct PIDConfig {
   void 			(*callback)(PIDState *);
   byte 			adcChannel;
   int 			adcSampleRateHz;
-  uint8_t 		samplesToAverage;
+  uint8_t 		adcAverageLog2;
   byte 			loopUpdateRatio;
   byte 			diagLedPin;
 } PIDConfig;

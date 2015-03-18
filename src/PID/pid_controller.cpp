@@ -92,13 +92,13 @@ void setup() {
   // Configure the PID to callback 'onNewSample' after each sample, which may or may
   // not be a time of PID update depending on pidUpdateRate
   PIDConfig pidConfig;
-  pidConfig.adcChannel       = ADC_CHANNEL;
-  pidConfig.adcSampleRateHz  = ADC_SAMPLE_RATE_HZ;
-  pidConfig.samplesToAverage = ADC_SAMPLES_TO_AVERAGE_LOG2;
-  pidConfig.loopUpdateRatio  = PID_LOOP_UPDATE_RATIO;
-  pidConfig.diagLedPin       = PID_DIAG_LED_PIN;
-  pidConfig.callback         = &onNewSample;
-  _pid 						 = new PID( pidConfig );
+  pidConfig.adcChannel       		= ADC_CHANNEL;
+  pidConfig.adcSampleRateHz  		= ADC_SAMPLE_RATE_HZ;
+  pidConfig.adcAverageLog2		 	= ADC_AVERAGE_LOG2;
+  pidConfig.loopUpdateRatio  		= PID_LOOP_UPDATE_RATIO;
+  pidConfig.diagLedPin       		= PID_DIAG_LED_PIN;
+  pidConfig.callback         		= &onNewSample;
+  _pid 						 		= new PID( pidConfig );
 
   // Configure the Serial port to receive commands and send messages
   MSGConfig msgConfig;
