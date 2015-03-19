@@ -2,7 +2,7 @@
 #define PID_h
 #define LIB_VERSION	    0.0.1
 
-#include "Sampler.h"
+#include "AnalogIF.h"
 
 typedef unsigned long ulong;
 
@@ -42,9 +42,13 @@ typedef struct PIDState {
 typedef struct PIDConfig {
   void 			(*callback)(PIDState *);
   byte 			adcChannel;
-  int 			adcSampleRateHz;
+  uint16_t 		adcSampleRateHz;
   uint8_t 		adcDecimateLog2;
   byte 			loopUpdateRatio;
+  pwm_t 		pwmMode;
+  uint8_t       pwmMinPulseWidth;
+  uint8_t	    pwmNumBits;
+  uint8_t	    pwmPin;
   byte 			diagLedPin;
 } PIDConfig;
 
@@ -62,6 +66,8 @@ class PID
     int8_t    	SetLoopConstants( uint8_t * );
     PIDLoopK*   GetLoopConstants( void );
     int8_t    	SetOutputLimits( uint8_t * );
+    int8_t		EnablePwm( void );
+    int8_t 		DisablePwm( void );
     int8_t	  	SetPwm( uint8_t * );
     int8_t	  	SetSetpoint( uint8_t * );
     int8_t      EnableLoop( void );
@@ -72,8 +78,10 @@ class PID
   private:
     static void _adcCallbackWrapper( void *, int );
     void        _updateLoop( int );
+    PwmConfig	_pwmConfig;
 
   private:
+    AnalogIF	*_analogIF;
     PIDConfig  	 _config;     		// PID configuration structure passed to constructor
     PIDState   	 _pidState;   		// PID private data structure maintaining current state of PID
     PIDLoopK 	 _pidLoopK;			// PID loop constants, copied into PIDState

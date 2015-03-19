@@ -1,5 +1,5 @@
-#ifndef Sampler2_h
-#define Sampler2_h
+#ifndef AnalogIF_H
+#define AnalogIF_H
 
 #define LIB_VERSION	0.0.1
 
@@ -73,8 +73,60 @@
     TIMSK &= ~(1 << OCIEA);                       \
 }
 
-void Sampler_setup(char, int, uint8_t, void *, void(*)(void *, int));
-void Sampler_start(void);
-void Sampler_stop(void);
+typedef enum {
+	HW_PWM,				\
+	SW_PWM 				\
+} pwm_t;
+
+typedef struct {
+  	pwm_t	     pwmMode;
+	uint8_t      pwmMinPulseWidth;
+  	uint8_t	     pwmNumBits;
+	uint8_t	     pwmPin;
+} PwmConfig;
+
+
+class AnalogIF
+{
+
+	// constructor
+	public:
+        AnalogIF(uint16_t, uint8_t, uint8_t, void *, void (*)(void *, int));
+
+	// public methods
+	public:
+		void	      startAdc( void );
+		void 	      stopAdc( void );
+		void 	      useAdcChannel( uint8_t );
+		bool          configPwm( PwmConfig );
+		void          enableSwPwm( void );
+		void          disableSwPwm( void );
+		void          setPwmValue( uint16_t pwmValue );
+		void          updateAdcSinc( unsigned int );
+		void          updateSwPwm( void );
+
+	// private functions
+	private:
+
+        void          ( *_callback )( void *, int );
+		void		  *_context;
+
+	// private state
+	private:
+        uint8_t       _fundamentalRateHz;
+
+		uint8_t       _adcChannel;
+		uint16_t      _adcAccumulator;
+		uint16_t      _adcCounter;
+		uint8_t       _adcDecimateLog2;
+		uint16_t      _pwmValue;
+		bool          _swPwmEnable;
+		uint8_t       _swPwmPin;
+		uint8_t       _swPwmMinPulseWidth;
+		uint8_t       _swPwmNumBits;
+        uint16_t      _swPwmValueCounter;
+        uint16_t      _swPwmClockCounter;
+        uint16_t      _swPwmMaxCount;
+};
 
 #endif

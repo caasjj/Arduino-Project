@@ -19,18 +19,26 @@ PID::PID(PIDConfig config)
   pinMode(_config.diagLedPin, OUTPUT);
   digitalWrite(_config.diagLedPin, LOW);
 
-  Sampler_setup(_config.adcChannel, _config.adcSampleRateHz, _config.adcDecimateLog2, this, PID::_adcCallbackWrapper);
+  _pwmConfig.pwmMode            = SW_PWM; // HW not implemented
+  _pwmConfig.pwmMinPulseWidth   = config.pwmMinPulseWidth;
+  _pwmConfig.pwmNumBits         = config.pwmNumBits;
+  _pwmConfig.pwmPin             = config.pwmPin;
 
-  // Start off in disabled mode
+  _analogIF = new AnalogIF(config.adcSampleRateHz, config.adcDecimateLog2, config.adcChannel, (void *) this, PID::_adcCallbackWrapper);
+  _analogIF->startAdc();
+
+  _analogIF->configPwm( _pwmConfig );
+  _analogIF->setPwmValue(16);
+  _analogIF->enableSwPwm();
+
+  // Start off with status messages, PID loop, PWM output and setPoint all disabled
   _statusMsgEnabled 	= false;
   _pidState.enabled 	= false;
   _pidState.pidOutput  	= 0.0;
   _pidState.setpoint    = 0.0;
 
-  // TEMPORARU
-  //Sampler_start();
-}
 
+}
 
 /*********************************************************************************************
  *
@@ -39,7 +47,7 @@ PID::PID(PIDConfig config)
  *********************************************************************************************/
 int8_t PID::EnableSampler(void)
 {
-	Sampler_start();
+	_analogIF->startAdc();
 	return 0;
 }
 
@@ -52,7 +60,7 @@ int8_t PID::EnableSampler(void)
 int8_t PID::DisableSampler(void)
 {
 
-	Sampler_stop();
+	_analogIF->stopAdc();
 	return 0;
 
 }
@@ -64,7 +72,14 @@ int8_t PID::DisableSampler(void)
  *********************************************************************************************/
 int8_t PID::ConfigurePwm(uint8_t *data)
 {
-  return 0;
+
+  _analogIF->disableSwPwm();
+  _pwmConfig.pwmMinPulseWidth   = * (uint8_t *) &data[0];
+  _pwmConfig.pwmNumBits         = * (uint8_t *) &data[1];
+  _analogIF->configPwm( _pwmConfig );
+  _analogIF->enableSwPwm();
+  _analogIF->setPwmValue( *(uint16_t *) &data[2]);
+  return 1;
 }
 
 /*********************************************************************************************
@@ -108,9 +123,41 @@ int8_t PID::SetOutputLimits(uint8_t *data)
  * SetPwm
  *
  *********************************************************************************************/
+int8_t PID::EnablePwm()
+{
+  _analogIF->enableSwPwm();
+  return 1;
+}
+/*********************************************************************************************
+ *
+ * SetPwm
+ *
+ *********************************************************************************************/
+int8_t PID::DisablePwm()
+{
+  _analogIF->disableSwPwm();
+  return 1;
+}
+
+/*********************************************************************************************
+ *
+ * SetPwm
+ *
+ *********************************************************************************************/
 int8_t PID::SetPwm(uint8_t *data)
 {
-  return 0;
+  int16_t pwmValue = *(int16_t *) data;
+  bool    pwmEnable = * (bool *) &(data[2]);
+
+  _analogIF->setPwmValue(pwmValue);
+  if (pwmEnable) {
+  	EnablePwm();
+  }
+  else
+  {
+  	DisablePwm();
+  }
+  return 1;
 }
 
 /*********************************************************************************************

@@ -29,6 +29,8 @@ typedef enum {								\
  SET_LOOP_K_CMD,							\
  GET_LOOP_K_CMD,							\
  SET_OUTPUT_LIMITS_CMD,						\
+ ENABLE_PWM,								\
+ DISABLE_PWM,								\
  SET_PWM_CMD,								\
  SET_SETPOINT_CMD,							\
  ENABLE_LOOP_CMD,							\

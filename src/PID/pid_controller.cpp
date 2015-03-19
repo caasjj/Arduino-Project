@@ -21,10 +21,10 @@ int8_t onReceivedCommand(Command *command) {
 
 	int8_t 		status = 0;
 	PIDLoopK	*pidLoopK_ptr;
-	TestMsg		testMsg;
+//	TestMsg		testMsg;
 
-	uint8_t * ptr1;
-	uint8_t * ptr2;
+//	uint8_t * ptr1;
+//	uint8_t * ptr2;
 
 	switch(command->cmdType) {
 
@@ -56,6 +56,14 @@ int8_t onReceivedCommand(Command *command) {
  	case SET_OUTPUT_LIMITS_CMD:
  		status = _pid->SetOutputLimits(command->body);
  		break;
+
+	case ENABLE_PWM:
+		status = _pid->EnablePwm();
+		break;
+
+	case DISABLE_PWM:
+		status = _pid->DisablePwm();
+		break;
 
  	case SET_PWM_CMD:
  		status = _pid->SetPwm(command->body);
@@ -92,19 +100,23 @@ void setup() {
   // Configure the PID to callback 'onNewSample' after each sample, which may or may
   // not be a time of PID update depending on pidUpdateRate
   PIDConfig pidConfig;
-  pidConfig.adcChannel       		= ADC_CHANNEL;
-  pidConfig.adcSampleRateHz  		= ADC_SAMPLE_RATE_HZ;
-  pidConfig.adcDecimateLog2		 	= ADC_DECIMATE_LOG2;
-  pidConfig.loopUpdateRatio  		= PID_LOOP_UPDATE_RATIO;
-  pidConfig.diagLedPin       		= PID_DIAG_LED_PIN;
-  pidConfig.callback         		= &onNewSample;
-  _pid 						 		= new PID( pidConfig );
+  pidConfig.adcChannel       		= ADC_CHANNEL; 			// Arduino ADC channel
+  pidConfig.adcSampleRateHz  		= ADC_SAMPLE_RATE_HZ; 	// base clock rate for entire ADC, PWM and PID Loop
+  pidConfig.adcDecimateLog2		 	= ADC_DECIMATE_LOG2;	// ADC updates 1 sample out of this many clock cycles
+  pidConfig.pwmMode					= SW_PWM; 				// HW PDM not implemented
+  pidConfig.pwmMinPulseWidth		= PWM_MIN_PULSE_WIDTH; 	// in units of ADC sample clock
+  pidConfig.pwmNumBits 				= PWM_NUM_BITS;  		// period = PULSE_WIDTH * 2^(NUM_BITS)
+  pidConfig.pwmPin 					= PWM_PIN;				// digital IO pin for PWM output
+  pidConfig.loopUpdateRatio  		= PID_LOOP_UPDATE_RATIO;// PID updated 1 time out of this many clock cycles
+  pidConfig.diagLedPin       		= PID_DIAG_LED_PIN; 	// digital IO pin for diagnostic LED output
+  pidConfig.callback         		= &onNewSample; 		// Analog IF will call this method with a new ADC sample
+  _pid 						 		= new PID( pidConfig ); // PID object configured as per above
 
   // Configure the Serial port to receive commands and send messages
   MSGConfig msgConfig;
-  msgConfig.baudRate 		 = SERIAL_BAUD_RATE;
-  msgConfig.callback 		 = &onReceivedCommand;
-  _messager 				 = new Messager( msgConfig );
+  msgConfig.baudRate 		 = SERIAL_BAUD_RATE; 			// serial baud rate to communicate with host
+  msgConfig.callback 		 = &onReceivedCommand; 			// Messager will call this method with new command from host
+  _messager 				 = new Messager( msgConfig ); 	// messager instance
 
 }
 
